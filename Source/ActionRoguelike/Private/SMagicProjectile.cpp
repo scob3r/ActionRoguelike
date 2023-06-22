@@ -39,3 +39,4 @@ void ASMagicProjectile::Tick(float DeltaTime)
 
 }
 
+

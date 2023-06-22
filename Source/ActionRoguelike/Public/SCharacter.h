@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "SMagicProjectile.h"
 #include "SCharacter.generated.h"
+
 class UCameraComponent;
 class USpringArmComponent;
 class USInteractionComponent;
@@ -16,8 +18,11 @@ class ACTIONROGUELIKE_API ASCharacter : public ACharacter
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "Attack")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	TSubclassOf<AActor> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+		TSubclassOf<AActor> BlackholeClass;
 
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	UAnimMontage* AttackAnim;
@@ -38,6 +43,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere);
 	USInteractionComponent* InteractionComp;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	void MoveForward(float value);
@@ -46,6 +52,8 @@ protected:
 	void PrimaryAttack();
 	void PrimaryAttack_TimeElapsed();
 	void PrimaryInteract();
+	void BlackholeAttack();
+	void BlackholeAttack_TimeElapsed();
 
 public:	
 	// Called every frame
@@ -53,5 +61,6 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 
 };
