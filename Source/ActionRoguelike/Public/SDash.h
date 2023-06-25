@@ -5,32 +5,30 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "SMagicProjectile.generated.h"
-
+#include "SDash.generated.h"
 
 class USphereComponent;
 class UProjectileMovementComponent;
 class UParticleSystemComponent;
 
 UCLASS()
-class ACTIONROGUELIKE_API ASMagicProjectile : public AActor
+class ACTIONROGUELIKE_API ASDash : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ASMagicProjectile();
+	ASDash();
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly)
-		USphereComponent* SphereComp;
+	USphereComponent* SphereComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly)
-		UProjectileMovementComponent* MovementComp;
+	UProjectileMovementComponent* MovementComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly)
-		UParticleSystemComponent* EffectComp;
-
+	UParticleSystemComponent* EffectComp;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -38,6 +36,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	void Teleport();
+	FTimerHandle FuzeTimerHandle;
 
-}
-;
+};

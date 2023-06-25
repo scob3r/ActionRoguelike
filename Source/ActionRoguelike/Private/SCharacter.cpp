@@ -9,6 +9,10 @@
 #include "SInteractionComponent.h"
 #include "SGameplayInterface.h"
 #include "SMagicProjectile.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Math/RotationMatrix.h"
+#include <SDash.cpp>
+#include <SDash.h>
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -50,14 +54,15 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASCharacter::MoveRight);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::DoJump);
-
+	
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::DoJump);
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
 	PlayerInputComponent->BindAction("BlackholeAttack", IE_Pressed, this, &ASCharacter::BlackholeAttack);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
+	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &ASCharacter::Dash);
 }
 
 void ASCharacter::MoveForward(float value)
@@ -96,9 +101,31 @@ void ASCharacter::PrimaryAttack()
 
 void ASCharacter::PrimaryAttack_TimeElapsed()
 {
-	//spawn location
+	//spawn/impact from cam
+	FCollisionObjectQueryParams ObjectQueryParams;
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	FHitResult Hit;
+
+	FVector Start = CameraComp->GetComponentLocation();
+	FVector Dir = CameraComp->GetComponentRotation().Vector();
+
+	FVector End = (Start + (Dir * 10000));
 	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-	FTransform SpawnTM = FTransform(GetControlRotation(), HandLocation);
+	bool bBlockingHit = GetWorld()->LineTraceSingleByObjectType(Hit, Start, End, ObjectQueryParams);
+	FVector Target;
+	if (bBlockingHit) {
+		//DrawDebugSphere(GetWorld(), Hit.ImpactPoint, 30.0f, 32, FColor::Cyan, false, 2.0f);
+		Target = Hit.ImpactPoint - HandLocation;
+	}
+	else
+	{
+		Target = End - HandLocation;
+	}
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Emerald, false, 20.0f, 0, 2.0f);
+	//hand spawn location
+	FRotator CamRotation = FRotationMatrix::MakeFromX(Target).Rotator();
+	FTransform SpawnTM = FTransform(CamRotation, HandLocation);
+
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.Instigator = this;
@@ -128,11 +155,20 @@ void ASCharacter::BlackholeAttack_TimeElapsed()
 }
 
 
-
 void ASCharacter::PrimaryInteract()
 {
 	if (InteractionComp)
 	{
 		InteractionComp->PrimaryInteract();
 	}
+}
+
+void ASCharacter::Dash()
+{
+	PlayAnimMontage(AttackAnim);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::PrimaryAttack_TimeElapsed, 0.2f);
+	//AActor::ASDash::Teleport();
+	PlayAnimMontage(AttackAnim);
+
 }

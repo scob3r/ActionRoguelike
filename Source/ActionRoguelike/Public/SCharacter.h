@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "SMagicProjectile.h"
+#include <SDash.cpp>
+#include <SDash.h>
 #include "SCharacter.generated.h"
 
 class UCameraComponent;
@@ -54,6 +56,7 @@ protected:
 	void PrimaryInteract();
 	void BlackholeAttack();
 	void BlackholeAttack_TimeElapsed();
+	void Dash();
 
 public:	
 	// Called every frame
